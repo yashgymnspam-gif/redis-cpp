@@ -1,0 +1,7 @@
+*.exe
+*.o
+*.obj
+node_modules/
+store.txt
+build/
+buffs/
