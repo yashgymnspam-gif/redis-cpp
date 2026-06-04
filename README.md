@@ -35,26 +35,15 @@ Real Redis clients (`redis-cli`) connect to this server and get back spec-compli
 
 ## Architecture
 
-```
-redis-cli / web client
-        │
-        ▼
-  TCP :6379 (Winsock)
-        │
-  ┌─────┴──────┐
-  │  C++ Server │
-  │  main thread│  accept() loop
-  └─────┬───────┘
-        │  thread per client
-  ┌─────▼───────────────────┐
-  │  handleClient()          │
-  │  parseRESP()             │
-  │  execute command         │
-  │  lock_guard<mutex>       │
-  └──────────────────────────┘
-        │
-  unordered_map<string,string>  ← store
-  unordered_map<string,tp>      ← expiry
+```mermaid
+flowchart TD
+    A[redis-cli / web client] --> B[TCP :6379 via Winsock]
+    B --> C[C++ Server — main thread\naccept loop]
+    C -->|spawns thread per client| D[handleClient]
+    D --> E[parseRESP]
+    E --> F[execute command\nlock_guard mutex]
+    F --> G[(unordered_map store)]
+    F --> H[(unordered_map expiry)]
 ```
 
 ---
