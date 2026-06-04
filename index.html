@@ -408,7 +408,15 @@ function syncMirror(parsed, pendingCmd) {
     mirror[pendingCmd[1]] = { val: String(parsed.val), expireAt: mirror[pendingCmd[1]]?.expireAt || null };
   }
   if (cmd === 'APPEND' && parsed.type === 'int') {
-    if (!mirror[pendingCmd[1]]) mirror[pendingCmd[1]] = { val: '…', expireAt: null };
+    syncSend(buildRESP(['GET',pendingCmd[1]]),(r)=>
+  {
+    if (r.type === 'bulk'){
+      if(!mirror[pendingCmd[1]]) mirror[pendingCmd[1]] = { val: r.val, expireAt:null};
+      else mirror[pendingCmd[1]].val = r.val;
+      updateSidebar()
+    }
+  });
+  runSync();
   }
   if (cmd === 'FLUSHALL') Object.keys(mirror).forEach(k => delete mirror[k]);
   if (cmd === 'TTL' && parsed.type === 'int') {
